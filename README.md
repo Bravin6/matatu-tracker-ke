@@ -1,237 +1,253 @@
-# 🚐 MatatuTrack — Real-Time Matatu Tracking System
-### Urban Transport Platform for Nairobi, Kenya
+# 🚐 MatatuTrack KE
+
+> Transforming Nairobi's matatu experience through real-time tracking and passenger information.
+
+A Real-Time Matatu Tracking and Passenger Information System designed to improve urban public transportation in Nairobi, Kenya. The platform enables passengers to track matatus in real time, view estimated arrival times (ETA), access route information, and make informed travel decisions while providing transport operators with fleet monitoring and management capabilities.
 
 ---
 
-## 📋 System Overview
+## 📖 Overview
 
-MatatuTrack is a full-stack web platform for real-time GPS tracking of matatus (minibuses) across Nairobi's major routes. It serves three user roles through a unified login interface:
+Public transport users in Nairobi often face uncertainty regarding matatu locations, arrival times, and route availability. MatatuTrack KE addresses these challenges by providing a centralized platform that delivers live vehicle tracking, route visibility, and operational analytics.
 
-- **Passengers** — View live matatu positions on a map, get ETAs, browse routes and stages
-- **Drivers** — Activate GPS tracking, update passenger counts, manage trip status
-- **Admins** — Monitor the full fleet, broadcast alerts, view analytics
+The system consists of three major modules:
 
----
+* Passenger Portal
+* Driver Console
+* Administrator Dashboard
 
-## 🛠 Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Frontend | HTML5, CSS3, JavaScript (ES2020+) |
-| Backend | PHP 8.1+ |
-| Database | MySQL 8.0+ |
-| Maps | Leaflet.js + OpenStreetMap/CartoDB |
-| Geolocation | HTML5 Geolocation API (Watchposition) |
-| Auth | PHP Sessions + bcrypt password hashing |
+Together, these modules create a connected ecosystem that improves transparency, efficiency, and commuter experience.
 
 ---
 
-## 🗂 File Structure
+## ✨ Key Features
 
-```
-matatu-tracker/
-├── index.php               ← Landing page + Login/Register
-├── passenger-dashboard.php ← Passenger live map view
-├── driver-dashboard.php    ← Driver GPS tracking console
-├── admin-dashboard.php     ← Admin analytics & fleet management
-├── auth.php                ← Authentication handler (login/register/logout)
-├── database.sql            ← Full MySQL schema + seed data
-│
-├── includes/
-│   └── config.php          ← DB config, session helpers, utilities
-│
-└── api/
-    ├── tracking.php        ← GPS update/fetch API
-    ├── routes.php          ← Routes & stages API
-    └── alerts.php          ← System alerts API
-```
+### Passenger Module
 
----
+* Real-time matatu tracking
+* Live route monitoring
+* Estimated Time of Arrival (ETA)
+* Route and stage information
+* Fare information
+* Saved routes
+* Notifications and alerts
 
-## ⚙️ Setup Instructions
+### Driver Module
 
-### 1. Requirements
-- PHP 8.1 or higher with PDO MySQL extension
-- MySQL 8.0 or MariaDB 10.6+
-- Web server: Apache (XAMPP/WAMP) or Nginx
-- A modern browser with geolocation support
+* GPS location tracking
+* Live trip monitoring
+* Speed tracking
+* Distance monitoring
+* Passenger count updates
+* Trip management
 
-### 2. Database Setup
+### Administrator Module
 
-```sql
--- In MySQL/phpMyAdmin, run:
-SOURCE /path/to/matatu-tracker/database.sql;
-```
-
-Or import via phpMyAdmin: `Import → database.sql`
-
-### 3. Configure Database Connection
-
-Edit `includes/config.php`:
-
-```php
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'matatu_tracker');
-define('DB_USER', 'your_mysql_username');
-define('DB_PASS', 'your_mysql_password');
-```
-
-### 4. Place Files on Server
-
-**XAMPP/WAMP:**
-```
-C:/xampp/htdocs/matatu-tracker/
-```
-
-**Linux Apache:**
-```
-/var/www/html/matatu-tracker/
-```
-
-### 5. Access the Application
-
-```
-http://localhost/matatu-tracker/
-```
+* Fleet monitoring
+* Driver management
+* User management
+* Route management
+* Transport analytics
+* Reports generation
+* Broadcast alerts
 
 ---
 
-## 🔐 Demo Accounts
+## 🛠 Technology Stack
 
-All demo passwords are: **`password`**
+### Frontend
 
-| Role | Email | Notes |
-|------|-------|-------|
-| Passenger | alice.njeri@gmail.com | Full passenger dashboard |
-| Driver | john.kamau@gmail.com | GPS tracking console (Route 111) |
-| Driver | peter.mwangi@gmail.com | Route 23 driver |
-| Admin | admin@matatutrack.co.ke | Full admin access |
+* HTML5
+* CSS3
+* JavaScript
+* Bootstrap 5
 
----
+### Backend
 
-## 🗺 Routes Covered
+* PHP
 
-| Route | Corridor | Fare |
-|-------|----------|------|
-| Route 111 | CBD ↔ Rongai | KES 70–100 |
-| Route 23 | CBD ↔ Eastleigh | KES 30–50 |
-| Route 44 | Westlands ↔ CBD | KES 30–50 |
-| Route 58 | CBD ↔ Githurai 45 | KES 50–80 |
-| Route 33 | CBD ↔ Kawangware | KES 40–60 |
-| Route 9 | CBD ↔ Ngong Road | KES 60–90 |
-| Route 45 | CBD ↔ Thika Town | KES 80–120 |
-| Route 14 | CBD ↔ South B/C | KES 35–55 |
+### Database
 
----
+* MySQL
 
-## 🔄 Real-Time Architecture
+### Mapping & GIS
 
-```
-Driver's Phone (GPS)
-     │
-     ▼ POST every 4 seconds
-api/tracking.php
-     │
-     ▼ Upsert
-live_tracking table (current position)
-     │
-     ├─▶ location_history table (audit trail)
-     │
-     ▼ SELECT every 5 seconds
-passenger-dashboard.php
-     │
-     ▼
-Leaflet.js map markers update
-```
+* Leaflet.js
+* OpenStreetMap
 
-### GPS Data Flow:
-1. Driver clicks **START** → `navigator.geolocation.watchPosition()` activates
-2. Every position change → JavaScript calls `api/tracking.php` via POST
-3. Server upserts `live_tracking` table (one row per matatu)
-4. Passenger dashboard polls `api/tracking.php?action=get_active` every 5s
-5. Map markers animate to new positions
+### APIs
+
+* Geolocation API
+* Fetch API (AJAX)
+
+### Visualization
+
+* Chart.js
 
 ---
 
-## 🧩 Key API Endpoints
+## 🏗 System Architecture
 
-### GET Endpoints
-```
-GET api/tracking.php?action=get_active         → All active matatus with positions
-GET api/tracking.php?action=get_matatu&id=1    → Single matatu details
-GET api/tracking.php?action=driver_stats&driver_id=2
-GET api/tracking.php?action=route_history&matatu_id=1&minutes=60
-GET api/routes.php?action=list                 → All routes
-GET api/routes.php?action=stages&route_id=1    → Stages for a route
-```
+The platform follows a three-tier architecture:
 
-### POST Endpoints
-```
-POST api/tracking.php
-  { action: "update_location", matatu_id, driver_id, latitude, longitude, speed_kmh, passenger_count }
+### Presentation Layer
 
-POST api/tracking.php
-  { action: "set_offline", matatu_id, driver_id }
+* Passenger Dashboard
+* Driver Dashboard
+* Admin Dashboard
 
-POST api/alerts.php
-  { action: "create", title, message, alert_type }
-```
+### Application Layer
 
----
+* Authentication Services
+* GPS Tracking Services
+* ETA Computation Engine
+* Route Management Logic
+* Notification Services
 
-## 🔧 Extending the System
+### Data Layer
 
-### Add MPESA Fare Payment
-- Integrate Safaricom Daraja API
-- Add `payments` table to schema
-- Trigger payment on trip completion
-
-### Add Push Notifications
-- Integrate Firebase Cloud Messaging (FCM)
-- Notify passengers when their matatu is 500m away
-
-### Add Route Optimization
-- Google Maps Distance Matrix API
-- Calculate real-time ETAs based on live traffic
-
-### Add Driver Performance Scoring
-- Speed compliance, punctuality, passenger ratings
-- Leaderboard view in admin dashboard
+* MySQL Database
+* Vehicle Data
+* Route Data
+* User Data
+* Tracking Records
 
 ---
 
-## 📊 Database Key Tables
+## 📸 System Screenshots
 
-| Table | Purpose |
-|-------|---------|
-| `users` | Passengers, drivers, admins |
-| `routes` | Route definitions with fares |
-| `stages` | GPS coordinates of all bus stops |
-| `route_stages` | Many-to-many: stops on each route |
-| `matatus` | Vehicle registry |
-| `live_tracking` | Current GPS position (1 row/matatu) |
-| `location_history` | Full GPS audit trail |
-| `trips` | Trip sessions (start/end) |
-| `system_alerts` | Admin broadcast messages |
-| `feedback` | Passenger ratings |
+### Homepage
+
+The landing page introduces the platform and highlights the real-time tracking capability available to commuters.
+
+![Homepage](screenshots/homepage.png)
 
 ---
 
-## 🚀 Production Deployment Notes
+### Admin Dashboard
 
-1. **HTTPS Required** — Geolocation API requires HTTPS in production
-2. **Update DB credentials** in `includes/config.php`
-3. **MySQL user permissions** — Grant SELECT, INSERT, UPDATE, DELETE
-4. **Set timezone** — Update `php.ini`: `date.timezone = Africa/Nairobi`
-5. **Session security** — Enable `session.cookie_secure = 1` with HTTPS
-6. **Rate limiting** — Add rate limiting to `api/tracking.php` for production
-7. **Cron job** — Clean `location_history` records older than 30 days
+Administrators can monitor fleet operations, manage drivers, routes, users, and generate reports.
 
-```sql
--- Monthly cleanup job
-DELETE FROM location_history WHERE recorded_at < DATE_SUB(NOW(), INTERVAL 30 DAY);
+![Admin Dashboard](screenshots/admin-dashboard.png)
+
+---
+
+### Driver Dashboard
+
+Drivers can activate GPS tracking, monitor trip statistics, and update operational data in real time.
+
+![Driver Dashboard](screenshots/driver-dashboard.png)
+
+---
+
+### Passenger Live Map
+
+Passengers can view active matatus, track routes, and monitor estimated arrival times through a live interactive map.
+
+![Passenger Live Map](screenshots/passenger-live-map.png)
+
+---
+
+## 🚀 Installation
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/Bravin6/matatu-tracker-ke.git
+```
+
+### Navigate to Project Directory
+
+```bash
+cd matatu-tracker-ke
+```
+
+### Configure Database
+
+1. Create a MySQL database.
+2. Import the provided SQL file.
+3. Update database credentials in the configuration file.
+
+### Run the Application
+
+Place the project inside:
+
+```text
+xampp/htdocs/
+```
+
+Start:
+
+* Apache
+* MySQL
+
+Open:
+
+```text
+http://localhost/matatu_project
 ```
 
 ---
 
-*Built for Nairobi's urban mobility challenge — MatatuTrack © 2024*
+## 🔐 Security Features
+
+* Role-Based Access Control (RBAC)
+* Session Management
+* Password Hashing
+* Input Validation
+* SQL Injection Protection
+* XSS Protection
+
+---
+
+## 📱 Responsive Design
+
+The platform is optimized for:
+
+* Desktop
+* Tablet
+* Mobile Devices
+
+---
+
+## 🌍 Future Enhancements
+
+* Mobile Application (Android & iOS)
+* AI-Based ETA Prediction
+* Traffic-Aware Route Optimization
+* Push Notifications
+* Digital Ticketing
+* M-Pesa Integration
+* SACCO Integration
+* GTFS-Realtime Support
+
+---
+
+## 🎓 Academic Project
+
+**Final Year Project**
+
+Bachelor of Science in Information Technology
+
+Jomo Kenyatta University of Agriculture and Technology (JKUAT)
+
+**Author:** Masinde Bravin Wekhuyi
+
+**Year:** 2026
+
+---
+
+## 👨‍💻 Author
+
+**Masinde Bravin Wekhuyi**
+
+GitHub: https://github.com/Bravin6
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+See the LICENSE file for more information.
+
