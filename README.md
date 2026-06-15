@@ -1,6 +1,11 @@
 # 🚐 MatatuTrack KE
+![PHP](https://img.shields.io/badge/PHP-8.x-blue)
+![MySQL](https://img.shields.io/badge/MySQL-8.x-orange)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-5-purple)
+![Leaflet](https://img.shields.io/badge/Leaflet.js-Mapping-green)
+![License](https://img.shields.io/badge/License-MIT-yellow)
 
-> Transforming Nairobi's matatu experience through real-time tracking and passenger information.
+> Transforming Nairobi's matatu experience through real-time matatu tracking and passenger information.
 
 A Real-Time Matatu Tracking and Passenger Information System designed to improve urban public transportation in Nairobi, Kenya. The platform enables passengers to track matatus in real time, view estimated arrival times (ETA), access route information, and make informed travel decisions while providing transport operators with fleet monitoring and management capabilities.
 
@@ -88,7 +93,9 @@ Together, these modules create a connected ecosystem that improves transparency,
 
 ## 🏗 System Architecture
 
-The platform follows a three-tier architecture:
+The platform follows a three-tier architecture consisting of presentation, application, and data layers.
+
+![System Architecture](screenshots/system-architecture.png):
 
 ### Presentation Layer
 
