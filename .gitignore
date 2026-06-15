@@ -1,0 +1,29 @@
+# Environment files
+.env
+.env.local
+
+# XAMPP logs
+*.log
+
+# IDE files
+.vscode/
+.idea/
+
+# Dependency folders
+vendor/
+node_modules/
+
+# Cache files
+cache/
+tmp/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Backup files
+*.zip
+*.rar
+
+# Database exports
+*.sql
