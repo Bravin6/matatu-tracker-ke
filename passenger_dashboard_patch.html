@@ -1,0 +1,144 @@
+<!--
+  ============================================================
+  PASSENGER DASHBOARD PATCH
+  Replace the existing manual top-up instructions in
+  passenger-dashboard.php (around line 370-380) with this
+  interactive STK Push form.
+  ============================================================
+-->
+
+<!-- ── STK Push Top-Up Form (replaces manual instructions) ── -->
+<div class="topup-box" style="background:rgba(255,255,255,0.04);border-radius:14px;padding:1.4rem;margin-top:1.5rem;">
+  <div style="font-weight:700;margin-bottom:1rem;font-size:0.95rem;">
+    <i class="fas fa-mobile-alt" style="color:var(--green);margin-right:0.5rem;"></i>
+    Top Up via M-PESA
+  </div>
+
+  <div style="display:flex;gap:0.8rem;flex-wrap:wrap;">
+    <input id="topupPhone"  type="tel"    placeholder="Phone (07xx or 01xx)"
+           style="flex:1;min-width:140px;background:rgba(255,255,255,0.07);border:1px solid var(--border);
+                  border-radius:10px;padding:0.65rem 0.9rem;color:var(--text);font-size:0.9rem;"
+           value="">
+    <input id="topupAmount" type="number" placeholder="Amount (KES)"
+           min="10" max="150000"
+           style="flex:1;min-width:120px;background:rgba(255,255,255,0.07);border:1px solid var(--border);
+                  border-radius:10px;padding:0.65rem 0.9rem;color:var(--text);font-size:0.9rem;">
+    <button id="topupBtn" onclick="initiateTopUp()"
+            style="background:var(--green);color:#000;border:none;border-radius:10px;
+                   padding:0.65rem 1.4rem;font-weight:700;cursor:pointer;white-space:nowrap;">
+      <i class="fas fa-paper-plane"></i> Send STK Push
+    </button>
+  </div>
+
+  <div id="topupStatus" style="margin-top:0.9rem;display:none;font-size:0.88rem;padding:0.7rem 1rem;
+       border-radius:10px;background:rgba(0,230,118,0.1);color:var(--green);">
+  </div>
+</div>
+
+<script>
+// ── Pre-fill phone from session if available ────────────────
+(function() {
+  const phoneInput = document.getElementById('topupPhone');
+  if (phoneInput && !phoneInput.value) {
+    // Try to read from the page's user context (set in PHP)
+    phoneInput.value = window.__userPhone || '';
+  }
+})();
+
+let _topupPollTimer = null;
+
+async function initiateTopUp() {
+  const phone  = document.getElementById('topupPhone').value.trim();
+  const amount = parseInt(document.getElementById('topupAmount').value, 10);
+  const btn    = document.getElementById('topupBtn');
+  const status = document.getElementById('topupStatus');
+
+  clearInterval(_topupPollTimer);
+
+  // Basic client-side validation
+  if (!phone || !/^(?:\+?254|0)[17]\d{8}$/.test(phone)) {
+    showTopupStatus('Enter a valid Kenyan number (07xx or 01xx)', 'error');
+    return;
+  }
+  if (!amount || amount < 10) {
+    showTopupStatus('Minimum top-up is KES 10', 'error');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending…';
+  showTopupStatus('Sending STK Push to ' + phone + '…', 'info');
+
+  try {
+    const res  = await fetch('api/mpesa_stk.php', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ phone, amount }),
+    });
+    const data = await res.json();
+
+    if (data.error) {
+      showTopupStatus(data.message, 'error');
+      resetTopupBtn();
+      return;
+    }
+
+    // STK Push sent — start polling for status
+    showTopupStatus(data.message, 'info');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Waiting…';
+
+    const checkoutId = data.checkout_request_id;
+    let   attempts   = 0;
+
+    _topupPollTimer = setInterval(async () => {
+      attempts++;
+      if (attempts > 24) { // ~2 min timeout
+        clearInterval(_topupPollTimer);
+        showTopupStatus('Payment timed out. Please try again.', 'error');
+        resetTopupBtn();
+        return;
+      }
+
+      const r = await fetch(`api/mpesa_status.php?checkout_request_id=${encodeURIComponent(checkoutId)}`);
+      const s = await r.json();
+
+      if (s.status === 'complete') {
+        clearInterval(_topupPollTimer);
+        showTopupStatus('✅ ' + s.message, 'success');
+        resetTopupBtn();
+        // Refresh wallet display
+        if (typeof loadWallet === 'function') loadWallet();
+        if (typeof loadWalletHistory === 'function') loadWalletHistory();
+        document.getElementById('topupAmount').value = '';
+      } else if (s.status === 'failed') {
+        clearInterval(_topupPollTimer);
+        showTopupStatus('❌ ' + s.message, 'error');
+        resetTopupBtn();
+      }
+      // else still pending — keep polling
+    }, 5000); // poll every 5 seconds
+
+  } catch (err) {
+    showTopupStatus('Network error. Please try again.', 'error');
+    resetTopupBtn();
+  }
+}
+
+function showTopupStatus(msg, type) {
+  const el = document.getElementById('topupStatus');
+  el.style.display = 'block';
+  el.textContent   = msg;
+  el.style.background = type === 'error'   ? 'rgba(255,70,70,0.12)'  :
+                        type === 'success'  ? 'rgba(0,230,118,0.12)'  :
+                                             'rgba(100,150,255,0.10)';
+  el.style.color      = type === 'error'   ? 'var(--red)'  :
+                        type === 'success'  ? 'var(--green)' :
+                                             '#8ab4f8';
+}
+
+function resetTopupBtn() {
+  const btn = document.getElementById('topupBtn');
+  btn.disabled  = false;
+  btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send STK Push';
+}
+</script>
